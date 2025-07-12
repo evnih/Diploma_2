@@ -35,15 +35,16 @@ public class OrderCreationTest extends BaseTest {
     @Test
     @DisplayName("Создание заказа с авторизацией")
     @Step("Тест создания заказа с авторизацией")
+    @Severity(SeverityLevel.BLOCKER)
     public void testCreateOrderWithAuth() {
         List<String> ingredients = generateIngredients(2);
 
-        Order order = Order.builder()
-                .ingredients(ingredients)
-                .build();
+        ValidatableResponse response = ordersSteps.createOrder(ingredients, accessToken);
 
-        ValidatableResponse response = ordersSteps.createOrder(order);
-        verifyOrderCreated(response);
+        response.assertThat()
+                .statusCode(SC_OK)
+                .body("success", equalTo(true))
+                .body("order.number", notNullValue());
     }
     @Step("Проверка успешного создания заказа")
     private void verifyOrderCreated(ValidatableResponse response) {
@@ -55,20 +56,14 @@ public class OrderCreationTest extends BaseTest {
     @Test
     @DisplayName("Создание заказа без авторизации")
     @Tag("negative")
+    @Severity(SeverityLevel.CRITICAL)
     public void testCreateOrderWithoutAuth() {
-        val order = Order.builder()
-                .ingredients(validIngredients)
-                .build();
+        List<String> ingredients = generateIngredients(2);
 
-        ValidatableResponse response = given()
-                .spec(ApiClient.baseSpec())
-                .body(order)
-                .when()
-                .post(StellarBurgersUrl.ORDERS)
-                .then()
-                .log().ifValidationFails();
+        ValidatableResponse response = ordersSteps.createOrder(ingredients, null);
 
-        response.statusCode(SC_UNAUTHORIZED)
+        response.assertThat()
+                .statusCode(SC_UNAUTHORIZED)
                 .body("message", equalTo("You should be authorised"));
     }
 

@@ -8,6 +8,9 @@ import io.restassured.specification.RequestSpecification;
 import model.User;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.Matchers.*;
@@ -26,11 +29,15 @@ public class UsersSteps {
 
     @Step("Логин пользователя")
     public ValidatableResponse loginUser(String email, String password) {
-        String body = String.format("{\"email\": \"%s\", \"password\": \"%s\"}", email, password);
-        return given(requestSpec)
-                .body(body)
+        Map<String, String> authData = new HashMap<>();
+        authData.put("email", email);
+        authData.put("password", password);
+
+        return given()
+                .spec(requestSpec)
+                .body(authData)
                 .when()
-                .post(StellarBurgersUrl.LOGIN_ENDPOINT)
+                .post(StellarBurgersUrl.LOGIN)
                 .then();
     }
     @Step("Проверка успешного логина")
@@ -52,16 +59,23 @@ public class UsersSteps {
 
     @Step("Регистрация пользователя")
     public ValidatableResponse registerUser(String email, String password, String name) {
-        return given(requestSpec)
-                .body(new User(email, password, name))
+        Map<String, String> userData = new HashMap<>();
+        userData.put("email", email);
+        userData.put("password", password);
+        userData.put("name", name);
+
+        return given()
+                .spec(requestSpec)
+                .body(userData)
+                .when()
                 .post(StellarBurgersUrl.REGISTER)
                 .then();
-
     }
     @Step("Удаление пользователя")
     public ValidatableResponse deleteUser(String token) {
         return given()
                 .spec(ApiClient.authSpec(token))
+                .when()
                 .delete(StellarBurgersUrl.USER)
                 .then();
     }

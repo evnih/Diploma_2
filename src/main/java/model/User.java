@@ -12,9 +12,12 @@ import lombok.Data;
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 public class User {
     @Builder.Default
+    private String email = "default@example.com";  // Добавлено значение по умолчанию
+
+    @Builder.Default
     private String password = "password123";
+
     @Builder.Default
     private String name = "Test User";
-    private String email;
 }
 

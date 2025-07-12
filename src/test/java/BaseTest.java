@@ -4,12 +4,15 @@ import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 
 
+import model.User;
 import org.junit.After;
 import org.junit.Before;
 import steps.OrdersSteps;
 import steps.UsersSteps;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -20,29 +23,37 @@ public class BaseTest {
     protected String testUserPassword = "password123"; // Добавляем поле с паролем
     protected String testUserName = "Test User";
     protected String accessToken;
+    protected User testUser;
 
     @Before
     @Step("Подготовка тестовых данных")
     public void setUp() {
-        testUserPassword = generateRandomPassword();
-        testUserEmail = generateTestEmail();
 
+        usersSteps = new UsersSteps();
+        ordersSteps = new OrdersSteps();
+        testUserEmail = generateTestEmail();
+        testUserPassword = generateRandomPassword();
+        testUserName = generateRandomName();
+
+        // Регистрация тестового пользователя
         ValidatableResponse response = usersSteps.registerUser(
                 testUserEmail,
                 testUserPassword,
-                "Test User"
+                testUserName
         );
         accessToken = response.extract().path("accessToken");
-        ordersSteps = new OrdersSteps(accessToken);
     }
 
 
+
     @After
+    @Step("Очистка тестовых данных")
     public void tearDown() {
         if (accessToken != null) {
             usersSteps.deleteUser(accessToken);
         }
     }
+
 
     @Step("Генерация уникального email")
     protected String generateTestEmail() {
