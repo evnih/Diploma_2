@@ -1,0 +1,7 @@
+"Epic","Feature","Story","FAILED","BROKEN","PASSED","SKIPPED","UNKNOWN"
+"API Tests","User Registration","Дублирование пользователя","0","0","1","0","0"
+"API Tests","Order Creation","","2","0","2","0","0"
+"API Tests","User Registration","Создание пользователя","0","0","1","0","0"
+"API Tests","User Login","","0","0","1","0","0"
+"API Tests","User Registration","Валидация регистрации","0","0","1","0","0"
+"API Tests","User Login","Логин пользователя","0","0","3","0","0"
