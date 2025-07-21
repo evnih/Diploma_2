@@ -1,12 +1,12 @@
 import io.qameta.allure.*;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
+import model.User;
 import org.junit.Test;
 
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+
 
 
 @Epic("API Tests")
@@ -18,44 +18,51 @@ import static org.hamcrest.CoreMatchers.notNullValue;
         @Description("Успешный вход под существующим пользователем")
         @Severity(SeverityLevel.BLOCKER)
         public void testSuccessfulLogin() {
-            ValidatableResponse response = usersSteps.loginUser(testUserEmail, testUserPassword);
+            User validUser = User.builder()
+                    .email(testUserEmail)
+                    .password(testUserPassword)
+                    .build();
+            ValidatableResponse response = usersSteps.loginUser(validUser);
 
-            response.assertThat()
-                    .statusCode(SC_OK)
-                    .body("success", equalTo(true))
-                    .body("accessToken", notNullValue());
+            usersSteps.checkLoginSuccess(response);
         }
 
-
-        @Test
-        @Story("Логин пользователя")
-        @Description("Вход без email")
-        @Severity(SeverityLevel.CRITICAL)
-        public void testLoginWithoutEmail() {
-            ValidatableResponse response = usersSteps.loginUser("wrong@example.com", "wrongpass");
-
-            response.assertThat()
-                    .statusCode(SC_UNAUTHORIZED)
-                    .body("success", equalTo(false))
-                    .body("message", equalTo("email or password are incorrect"));
-        }
     @Test
     @Story("Логин пользователя")
-    @Description("Вход без пароля")
+    @DisplayName("Вход с неверными учетными данными")
+    @Description("Попытка авторизации с неверными учетными данными")
+    @Severity(SeverityLevel.BLOCKER)
+    public void testLoginWithInvalidCredentials() {
+        User invalidUser = User.builder()
+                .email("wrong@example.com")
+                .password("wrongpass")
+                .build();
+        ValidatableResponse response = usersSteps.loginUser(invalidUser);
+
+        usersSteps.checkLoginFailure(response);
+    }
+
+    @Test
+    @Story("Логин пользователя")
+    @DisplayName("Вход без пароля")
+    @Description("Попытка авторизации с пустым паролем")
     @Severity(SeverityLevel.CRITICAL)
     public void testLoginWithoutPassword() {
-        ValidatableResponse response = usersSteps.loginUser("valid@email.com", "");
+        ValidatableResponse response = usersSteps.loginUser(testUserEmail, "");
+
+        usersSteps.checkLoginFailure(response);
+    }
+
+    @Test
+    @Story("Логин пользователя")
+    @DisplayName("Вход без email")
+    @Description("Попытка авторизации с пустым email")
+    @Severity(SeverityLevel.CRITICAL)
+    public void testLoginWithoutEmail() {
+        ValidatableResponse response = usersSteps.loginUser("", testUserPassword);
 
         response.statusCode(SC_UNAUTHORIZED)
-                .body("success", equalTo(false))
                 .body("message", equalTo("email or password are incorrect"));
     }
-    @Test
-    @DisplayName("Вход с неверными учетными данными")
-    public void testLoginWithInvalidCredentials() {
-        usersSteps.loginUser("wrong@example.com", "wrongpass")
-                .statusCode(SC_UNAUTHORIZED)
-                .body("message", equalTo("email or password are incorrect"));
-    }
-    }
+}
 

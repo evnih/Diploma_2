@@ -1,15 +1,14 @@
-import Utils.ApiClient;
-import Utils.StellarBurgersUrl;
+import steps.OrdersSteps;
+
 import io.qameta.allure.*;
 import io.qameta.allure.junit4.DisplayName;
 import io.qameta.allure.junit4.Tag;
 import io.restassured.response.ValidatableResponse;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+
 import model.Order;
 import org.junit.Test;
 
-import static io.restassured.RestAssured.given;
 
 import java.util.List;
 
@@ -34,17 +33,17 @@ public class OrderCreationTest extends BaseTest {
 
     @Test
     @DisplayName("Создание заказа с авторизацией")
-    @Step("Тест создания заказа с авторизацией")
+    @Description("Успешное создание заказа с авторизацией")
     @Severity(SeverityLevel.BLOCKER)
     public void testCreateOrderWithAuth() {
-        List<String> ingredients = generateIngredients(2);
+        Order order = Order.builder()
+                .ingredients(validIngredients)
+                .build();
 
-        ValidatableResponse response = ordersSteps.createOrder(ingredients, accessToken);
+        ValidatableResponse response = new OrdersSteps(accessToken)
+                .createOrder(order);
 
-        response.assertThat()
-                .statusCode(SC_OK)
-                .body("success", equalTo(true))
-                .body("order.number", notNullValue());
+        verifyOrderCreated(response);
     }
     @Step("Проверка успешного создания заказа")
     private void verifyOrderCreated(ValidatableResponse response) {
@@ -56,11 +55,15 @@ public class OrderCreationTest extends BaseTest {
     @Test
     @DisplayName("Создание заказа без авторизации")
     @Tag("negative")
+    @Description("Попытка создания заказа без авторизации")
     @Severity(SeverityLevel.CRITICAL)
     public void testCreateOrderWithoutAuth() {
-        List<String> ingredients = generateIngredients(2);
+        Order order = Order.builder()
+                .ingredients(validIngredients)
+                .build();
 
-        ValidatableResponse response = ordersSteps.createOrder(ingredients, null);
+        ValidatableResponse response = new OrdersSteps()
+                .createOrderUnauthorized(order);
 
         response.assertThat()
                 .statusCode(SC_UNAUTHORIZED)
@@ -70,37 +73,33 @@ public class OrderCreationTest extends BaseTest {
     @Test
     @DisplayName("Создание заказа с неверным хешем ингредиентов")
     @Tag("negative")
+    @Description("Попытка создания заказа с неверным хешем")
+    @Severity(SeverityLevel.NORMAL)
     public void testCreateOrderWithInvalidIngredients() {
-        val order = Order.builder()
+        Order order = Order.builder()
                 .ingredients(invalidIngredients)
                 .build();
 
-        ValidatableResponse response = given()
-                .spec(ApiClient.authSpec(accessToken))
-                .body(order)
-                .when()
-                .post(StellarBurgersUrl.ORDERS)
-                .then()
-                .log().ifValidationFails();
+        ValidatableResponse response = new OrdersSteps(accessToken)
+                .createOrder(order);
 
-        response.statusCode(SC_INTERNAL_SERVER_ERROR);
+        response.statusCode(SC_INTERNAL_SERVER_ERROR)
+                .log().ifValidationFails();
     }
 
     @Test
     @DisplayName("Создание заказа без ингредиентов")
     @Tag("negative")
+    @Description("Попытка создания заказа без ингредиентов")
+    @Severity(SeverityLevel.NORMAL)
     public void testCreateOrderWithoutIngredients() {
-        val emptyOrder = Order.builder().build();
+        Order emptyOrder = Order.builder().build();
 
-        ValidatableResponse response = given()
-                .spec(ApiClient.authSpec(accessToken))
-                .body(emptyOrder)
-                .when()
-                .post(StellarBurgersUrl.ORDERS)
-                .then()
-                .log().ifValidationFails();
+        ValidatableResponse response = new OrdersSteps(accessToken)
+                .createOrder(emptyOrder);
 
         response.statusCode(SC_BAD_REQUEST)
-                .body("message", equalTo("Ingredient ids must be provided"));
+                .body("message", equalTo("Ingredient ids must be provided"))
+                .log().ifValidationFails();
     }
 }

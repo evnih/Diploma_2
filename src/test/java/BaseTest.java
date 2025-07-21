@@ -31,16 +31,15 @@ public class BaseTest {
 
         usersSteps = new UsersSteps();
         ordersSteps = new OrdersSteps();
-        testUserEmail = generateTestEmail();
-        testUserPassword = generateRandomPassword();
-        testUserName = generateRandomName();
+        testUser = User.builder()
+                .email(generateTestEmail())
+                .password(generateRandomPassword())
+                .name(generateRandomName())
+                .build();
 
         // Регистрация тестового пользователя
-        ValidatableResponse response = usersSteps.registerUser(
-                testUserEmail,
-                testUserPassword,
-                testUserName
-        );
+        ValidatableResponse response = usersSteps.registerUser(testUser);
+
         accessToken = response.extract().path("accessToken");
     }
 

@@ -1,11 +1,11 @@
 package steps;
 
-import Utils.ApiClient;
-import Utils.StellarBurgersUrl;
+import model.User;
+import utils.ApiClient;
+import utils.StellarBurgersUrl;
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
-import model.User;
 
 
 import java.util.HashMap;
@@ -16,26 +16,24 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.Matchers.*;
 
 
-public class UsersSteps {
-    private final RequestSpecification requestSpec;
+public class UsersSteps extends BaseSteps{
+
 
     public UsersSteps() {
-        this.requestSpec = ApiClient.baseSpec();
+        super();
     }
 
     public UsersSteps(String token) {
-        this.requestSpec = ApiClient.authSpec(token);
+        super(token);
     }
 
     @Step("Логин пользователя")
-    public ValidatableResponse loginUser(String email, String password) {
-        Map<String, String> authData = new HashMap<>();
-        authData.put("email", email);
-        authData.put("password", password);
+    public ValidatableResponse loginUser(User user) {
+
 
         return given()
                 .spec(requestSpec)
-                .body(authData)
+                .body(user)
                 .when()
                 .post(StellarBurgersUrl.LOGIN)
                 .then();
@@ -58,15 +56,11 @@ public class UsersSteps {
 
 
     @Step("Регистрация пользователя")
-    public ValidatableResponse registerUser(String email, String password, String name) {
-        Map<String, String> userData = new HashMap<>();
-        userData.put("email", email);
-        userData.put("password", password);
-        userData.put("name", name);
+    public ValidatableResponse registerUser(User user) {
 
         return given()
                 .spec(requestSpec)
-                .body(userData)
+                .body(user)
                 .when()
                 .post(StellarBurgersUrl.REGISTER)
                 .then();
@@ -78,5 +72,13 @@ public class UsersSteps {
                 .when()
                 .delete(StellarBurgersUrl.USER)
                 .then();
+    }
+    @Step("Логин пользователя по email и паролю")
+    public ValidatableResponse loginUser(String email, String password) {
+        User user = User.builder()
+                .email(email)
+                .password(password)
+                .build();
+        return loginUser(user);
     }
 }

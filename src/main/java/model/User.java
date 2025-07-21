@@ -5,19 +5,22 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import net.datafaker.Faker;
 
 
 @Data
 @Builder
 @AllArgsConstructor(access = AccessLevel.PUBLIC)
 public class User {
-    @Builder.Default
-    private String email = "default@example.com";  // Добавлено значение по умолчанию
+    private static final Faker faker = new Faker();
 
     @Builder.Default
-    private String password = "password123";
+    private String email = faker.internet().emailAddress();;
 
     @Builder.Default
-    private String name = "Test User";
+    private String password = faker.internet().password(8, 16, true, true, true);
+
+    @Builder.Default
+    private String name = faker.name().fullName();;
 }
 

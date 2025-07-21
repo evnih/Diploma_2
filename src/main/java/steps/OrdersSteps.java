@@ -1,12 +1,11 @@
 package steps;
 
-import Utils.ApiClient;
-import Utils.StellarBurgersUrl;
+import model.Order;
+import utils.ApiClient;
+import utils.StellarBurgersUrl;
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
-
-import model.Order;
 
 import java.util.List;
 import java.util.Map;
@@ -15,35 +14,53 @@ import static io.restassured.RestAssured.given;
 
 
 
-public class OrdersSteps {
-    private final RequestSpecification requestSpec;
+public class OrdersSteps extends BaseSteps{
+
+
 
     public OrdersSteps() {
-        this.requestSpec = ApiClient.baseSpec();
+        super();
     }
 
+
     public OrdersSteps(String token) {
-        this.requestSpec = ApiClient.authSpec(token);
+        super(token);
     }
 
     @Step("Создание заказа")
-    public ValidatableResponse createOrder(List<String> ingredients, String token) {
-        Map<String, Object> orderData = Map.of("ingredients", ingredients);
+    public ValidatableResponse createOrder(Order order) {
 
-        if (token != null) {
             return given()
-                    .spec(ApiClient.authSpec(token))
-                    .body(orderData)
-                    .when()
-                    .post(StellarBurgersUrl.ORDERS)
-                    .then();
-        } else {
-            return given()
-                    .spec(ApiClient.baseSpec())
-                    .body(orderData)
+                    .spec(requestSpec)
+                    .body(order)
                     .when()
                     .post(StellarBurgersUrl.ORDERS)
                     .then();
         }
+    @Step("Создание заказа без авторизации")
+    public ValidatableResponse createOrderUnauthorized(Order order) {
+        return given()
+                .spec(ApiClient.baseSpec())
+                .body(order)
+                .when()
+                .post(StellarBurgersUrl.ORDERS)
+                .then();
     }
+
+    @Step("Создание заказа с ингредиентами")
+    public ValidatableResponse createOrder(List<String> ingredients) {
+        Order order = Order.builder()
+                .ingredients(ingredients)
+                .build();
+        return createOrder(order);
+    }
+
+    @Step("Создание заказа с ингредиентами без авторизации")
+    public ValidatableResponse createOrderUnauthorized(List<String> ingredients) {
+        Order order = Order.builder()
+                .ingredients(ingredients)
+                .build();
+        return createOrderUnauthorized(order);
+    }
+
 }

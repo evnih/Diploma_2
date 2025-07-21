@@ -1,6 +1,6 @@
 package steps;
 
-import Utils.ApiClient;
+import utils.ApiClient;
 import io.restassured.specification.RequestSpecification;
 import lombok.Getter;
 import lombok.experimental.Accessors;
