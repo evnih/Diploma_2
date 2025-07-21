@@ -15,12 +15,12 @@ public class User {
     private static final Faker faker = new Faker();
 
     @Builder.Default
-    private String email = faker.internet().emailAddress();;
+    private String email = faker.internet().emailAddress();
 
     @Builder.Default
     private String password = faker.internet().password(8, 16, true, true, true);
 
     @Builder.Default
-    private String name = faker.name().fullName();;
+    private String name = faker.name().fullName();
 }
 

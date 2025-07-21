@@ -5,11 +5,7 @@ import utils.ApiClient;
 import utils.StellarBurgersUrl;
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
 
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
